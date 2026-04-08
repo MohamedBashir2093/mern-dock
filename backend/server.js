@@ -1,26 +1,27 @@
 const express = require('express');
 const app = express();
-const mongoose = require('mongoose')
-const dotenv = require('dotenv');
-dotenv.config();
-const cors = require('cors')
+const mongoose = require('mongoose');
+const cors = require('cors');
 const userRoute = require('./routes/userRoute');
 
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI).then(() => {
-    console.log("connected successfully");
+// Hardcoded credentials
+const MONGO_URI = "mongodb://root:examplepassword@mongodb:27017/mydatabase?authSource=admin";
+const PORT = 5000;
 
-    app.listen(process.env.PORT || 5000, (error) => {
-        if (error) console.log(error);
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log("MongoDB connected successfully");
 
-        console.log("connected successfully at", process.env.PORT)
-    })
-
-}).catch((error) => {
-    console.error('error', error)
-})
-
+    app.listen(PORT, (error) => {
+      if (error) console.log(error);
+      console.log(`Backend server running at port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("MongoDB connection error:", error);
+  });
 
 app.use('/api/user', userRoute);
