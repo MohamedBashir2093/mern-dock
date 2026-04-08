@@ -14,39 +14,48 @@ function Create() {
     event.preventDefault();
 
     const addUser = { name, email, age };
-    const response = await fetch("http://localhost:5000/api/user/createuser", {
-      method: "POST",
-      body: JSON.stringify(addUser),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const result = await response.json();
 
-    if (!response.ok) {
-      console.error(result.error);
-      setError(result.error);
-    }
-    if (response.ok) {
-      console.log(result);
-      setResponse(result.message);
-      setError("");
-      setName("");
-      setEmail("");
-      setAge(0);
-      navigate("/userlist");
+    try {
+      // ✅ Use relative path for API so Nginx proxy works
+      const res = await fetch("/api/user/createuser", {
+        method: "POST",
+        body: JSON.stringify(addUser),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        console.error(result.error);
+        setError(result.error);
+        setResponse("");
+      } else {
+        console.log(result);
+        setResponse(result.message);
+        setError("");
+        setName("");
+        setEmail("");
+        setAge(0);
+        navigate("/userlist");
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+      setError("Network error. Please try again.");
+      setResponse("");
     }
   };
 
   return (
     <div className="container my-2">
       {error && (
-        <div class="alert alert-danger" role="alert">
+        <div className="alert alert-danger" role="alert">
           {error}
         </div>
       )}
       {response && (
-        <div class="alert alert-success" role="alert">
+        <div className="alert alert-success" role="alert">
           {response}
         </div>
       )}
@@ -60,7 +69,6 @@ function Create() {
             name="name"
             type="text"
             className="form-control"
-            aria-describedby="emailHelp"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -71,7 +79,6 @@ function Create() {
             name="email"
             type="email"
             className="form-control"
-            aria-describedby="emailHelp"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -83,7 +90,7 @@ function Create() {
             type="number"
             className="form-control"
             value={age}
-            onChange={(e) => setAge(e.target.value)}
+            onChange={(e) => setAge(Number(e.target.value))}
           />
         </div>
 
