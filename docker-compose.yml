@@ -6,9 +6,9 @@ services:
     container_name: mongodb
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
-      MONGO_INITDB_DATABASE: ${MONGO_DB}
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: examplepassword
+      MONGO_INITDB_DATABASE: mydatabase
     volumes:
       - mongo-data:/data/db
     healthcheck:
@@ -24,7 +24,7 @@ services:
       context: ./backend
     restart: always
     environment:
-      MONGO_URI: ${MONGO_URI}
+      MONGO_URI: mongodb://root:examplepassword@mongodb:27017/mydatabase?authSource=admin
       NODE_ENV: production
     depends_on:
       mongodb:
