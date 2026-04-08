@@ -4,78 +4,75 @@ import { useNavigate, useParams } from "react-router-dom";
 function Update() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [age, setAge] = useState(0);
+  const [age, setAge] = useState("");
   const [error, setError] = useState("");
   const [response, setResponse] = useState("");
-  const [userData, setUserData] = useState("");
+  const [userData, setUserData] = useState(null);
 
   const navigate = useNavigate();
-
   const { id } = useParams();
 
+  // Fetch user data by ID
   const getUserData = async () => {
-    const response = await fetch(
-      `http://localhost:5000/api/user/userdetails/${id}`,
-      {
-        method: "GET",
-      }
-    );
-    const result = await response.json();
+    try {
+      const response = await fetch(`/api/user/userdetails/${id}`);
+      const result = await response.json();
 
-    if (!response.ok) {
-      console.error(result.error);
-      setError(result.error);
-    }
-    if (response.ok) {
-      console.log(result);
-      setUserData(result.data);
+      if (!response.ok) {
+        setError(result.error || "Failed to fetch user");
+      } else {
+        setUserData(result.data);
+        setName(result.data.name);
+        setEmail(result.data.email);
+        setAge(result.data.age);
+        setError("");
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+      setError("Network error. Please try again.");
     }
   };
 
   useEffect(() => {
     getUserData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
+  // Update user
   const handleEdit = async (event) => {
     event.preventDefault();
-
-    const addUser = { name, email, age };
-    const response = await fetch(
-      `http://localhost:5000/api/user/updateuser/${id}`,
-      {
+    try {
+      const response = await fetch(`/api/user/updateuser/${id}`, {
         method: "PATCH",
-        body: JSON.stringify(addUser),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    const result = await response.json();
+        body: JSON.stringify({ name, email, age }),
+        headers: { "Content-Type": "application/json" },
+      });
+      const result = await response.json();
 
-    if (!response.ok) {
-      console.error(result.error);
-      setError(result.error);
-    }
-    if (response.ok) {
-      console.log(result);
-      setResponse(result.message);
-      setError("");
-      setName("");
-      setEmail("");
-      setAge(0);
-      navigate("/userlist");
+      if (!response.ok) {
+        setError(result.error || "Update failed");
+      } else {
+        setResponse(result.message || "Updated successfully");
+        setError("");
+        setTimeout(() => {
+          navigate("/userlist");
+        }, 1000);
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+      setError("Network error. Please try again.");
     }
   };
 
   return (
     <div className="container my-2">
       {error && (
-        <div class="alert alert-danger" role="alert">
+        <div className="alert alert-danger" role="alert">
           {error}
         </div>
       )}
       {response && (
-        <div class="alert alert-success" role="alert">
+        <div className="alert alert-success" role="alert">
           {response}
         </div>
       )}
@@ -89,29 +86,29 @@ function Update() {
             name="name"
             type="text"
             className="form-control"
-            aria-describedby="emailHelp"
-            defaultValue={userData?.name}
+            value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </div>
+
         <div className="mb-3">
           <label className="form-label">Email address</label>
           <input
             name="email"
             type="email"
             className="form-control"
-            aria-describedby="emailHelp"
-            defaultValue={userData?.email}
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
+
         <div className="mb-3">
           <label className="form-label">Age</label>
           <input
             name="age"
             type="number"
             className="form-control"
-            defaultValue={userData?.age}
+            value={age}
             onChange={(e) => setAge(e.target.value)}
           />
         </div>
